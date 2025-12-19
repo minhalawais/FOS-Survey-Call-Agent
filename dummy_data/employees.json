@@ -1,0 +1,26 @@
+[
+    {
+        "id": 1,
+        "name": "احمد علی",
+        "name_en": "Ahmad Ali",
+        "designation": "Branch Manager",
+        "branch": "Johar Town",
+        "phone": "03001234567"
+    },
+    {
+        "id": 2,
+        "name": "سارہ خان",
+        "name_en": "Sara Khan",
+        "designation": "Store Lead",
+        "branch": "Emporium",
+        "phone": "03009876543"
+    },
+    {
+        "id": 3,
+        "name": "عمر فاروق",
+        "name_en": "Umar Farooq",
+        "designation": "Supervisor",
+        "branch": "DHA Phase 6",
+        "phone": "03005551234"
+    }
+]

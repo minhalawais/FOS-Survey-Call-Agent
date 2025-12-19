@@ -1,0 +1,96 @@
+version: "3.9"
+
+services:
+  # ==========================================================================
+  # LiveKit Server (Self-Hosted)
+  # ==========================================================================
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: fos-livekit
+    ports:
+      - "7880:7880" # HTTP API
+      - "7881:7881" # WebRTC TCP
+      - "50000-50100:50000-50100/udp" # WebRTC UDP
+    environment:
+      - LIVEKIT_KEYS=devkey:secret
+    command: --dev --bind 0.0.0.0
+    networks:
+      - fos-network
+
+  # ==========================================================================
+  # Ollama LLM Server (Qwen 2.5)
+  # ==========================================================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: fos-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    networks:
+      - fos-network
+    # Uncomment for GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+    # ==========================================================================
+    # Backend API
+    # ==========================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fos-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - LIVEKIT_URL=ws://livekit:7880
+      - LIVEKIT_API_KEY=devkey
+      - LIVEKIT_API_SECRET=secret
+      - OLLAMA_URL=http://ollama:11434
+      - DATABASE_PATH=/app/data/survey_agent.db
+    volumes:
+      - ./data:/app/data
+      - ./dummy_data:/app/dummy_data
+    depends_on:
+      - livekit
+      - ollama
+    networks:
+      - fos-network
+
+  # ==========================================================================
+  # LiveKit Agent Worker
+  # ==========================================================================
+  agent:
+    build:
+      context: .
+      dockerfile: agent/Dockerfile
+    container_name: fos-agent
+    environment:
+      - LIVEKIT_URL=ws://livekit:7880
+      - LIVEKIT_API_KEY=devkey
+      - LIVEKIT_API_SECRET=secret
+      - OLLAMA_URL=http://ollama:11434
+      - WHISPER_MODEL=base
+      - WHISPER_DEVICE=cpu
+      - TTS_MODEL=ai4bharat/indic-parler-tts
+    volumes:
+      - huggingface-cache:/root/.cache/huggingface
+    depends_on:
+      - livekit
+      - ollama
+    networks:
+      - fos-network
+
+networks:
+  fos-network:
+    driver: bridge
+
+volumes:
+  ollama-models:
+  huggingface-cache:

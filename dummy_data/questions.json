@@ -1,0 +1,52 @@
+[
+    {
+        "id": 1,
+        "survey_id": 1,
+        "order": 1,
+        "text": "What is your designation?",
+        "text_ur": "آپ کا عہدہ کیا ہے؟",
+        "type": "text",
+        "required": true,
+        "help_text": ""
+    },
+    {
+        "id": 2,
+        "survey_id": 1,
+        "order": 2,
+        "text": "Explain your experience of working in Cheezious in detail.",
+        "text_ur": "چیزیس میں کام کرنے کا تجربہ تفصیل سے بتائیں۔",
+        "type": "textarea",
+        "required": true,
+        "help_text": "Please share your complete experience"
+    },
+    {
+        "id": 3,
+        "survey_id": 1,
+        "order": 3,
+        "text": "What challenges do you face while managing your team?",
+        "text_ur": "ٹیم مینج کرنے میں آپ کو کیا چیلنجز درپیش ہیں؟",
+        "type": "textarea",
+        "required": true,
+        "help_text": ""
+    },
+    {
+        "id": 4,
+        "survey_id": 1,
+        "order": 4,
+        "text": "Do you think there is a communication gap between management and employees?",
+        "text_ur": "کیا آپ کے خیال میں انتظامیہ اور ملازمین کے درمیان رابطے میں کمی ہے؟",
+        "type": "textarea",
+        "required": true,
+        "help_text": ""
+    },
+    {
+        "id": 5,
+        "survey_id": 1,
+        "order": 5,
+        "text": "What suggestions do you have to improve workplace environment?",
+        "text_ur": "کام کی جگہ کے ماحول کو بہتر بنانے کے لیے آپ کی کیا تجاویز ہیں؟",
+        "type": "textarea",
+        "required": false,
+        "help_text": "Optional"
+    }
+]

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOS Voice Survey - LiveKit</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            color: var(--muted);
+            margin-bottom: 1rem;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(37, 99, 235, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--muted);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+        }
+
+        .status-dot.speaking {
+            background: var(--primary);
+            animation: pulse 0.5s infinite;
+        }
+
+        .status-dot.listening {
+            background: var(--warning);
+            animation: pulse 0.3s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .conversation {
+            height: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            max-width: 85%;
+        }
+
+        .message.agent {
+            background: var(--primary);
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.user {
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: auto;
+            text-align: left;
+        }
+
+        .message-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 0.25rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .mic-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mic-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .mic-btn.listening {
+            background: var(--warning);
+            animation: mic-pulse 0.5s infinite;
+        }
+
+        @keyframes mic-pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .setup {
+            text-align: center;
+        }
+
+        .setup select {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .progress {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🎤 FOS Voice Survey</h1>
+        <p>LiveKit Powered Urdu Voice Agent</p>
+    </div>
+
+    <div class="container">
+        <!-- Setup Section -->
+        <div id="setupSection" class="card setup">
+            <h2 class="card-title">سروے شروع کریں</h2>
+
+            <select id="surveySelect">
+                <option value="">-- سروے منتخب کریں --</option>
+            </select>
+
+            <select id="employeeSelect">
+                <option value="">-- ملازم منتخب کریں --</option>
+            </select>
+
+            <button id="startBtn" class="btn btn-primary" onclick="startSurvey()">
+                📞 سروے شروع کریں
+            </button>
+        </div>
+
+        <!-- Active Call Section -->
+        <div id="callSection" class="card hidden">
+            <div class="status">
+                <div id="statusDot" class="status-dot"></div>
+                <span id="statusText">Connecting...</span>
+            </div>
+
+            <div id="conversation" class="conversation">
+                <!-- Messages appear here -->
+            </div>
+
+            <div class="progress">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+
+            <div class="controls" style="margin-top: 1rem;">
+                <button id="micBtn" class="mic-btn" onclick="toggleMic()" disabled>
+                    🎙️
+                </button>
+            </div>
+
+            <div class="controls" style="margin-top: 1rem;">
+                <button class="btn btn-danger" onclick="endCall()">
+                    📵 کال ختم کریں
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LiveKit SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/livekit-client@2/dist/livekit-client.umd.min.js"></script>
+
+    <script>
+        // State
+        let room = null;
+        let localParticipant = null;
+        let audioTrack = null;
+        let isListening = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadSurveys();
+            await loadEmployees();
+        });
+
+        async function loadSurveys() {
+            try {
+                const res = await fetch('/api/surveys');
+                const data = await res.json();
+                const select = document.getElementById('surveySelect');
+                data.forEach(s => {
+                    select.innerHTML += `<option value="${s.id}">${s.title_ur || s.title}</option>`;
+                });
+            } catch (e) {
+                console.error('Failed to load surveys:', e);
+            }
+        }
+
+        async function loadEmployees() {
+            try {
+                const res = await fetch('/api/employees');
+                const data = await res.json();
+                const select = document.getElementById('employeeSelect');
+                data.forEach(e => {
+                    select.innerHTML += `<option value="${e.id}">${e.name}</option>`;
+                });
+            } catch (e) {
+                console.error('Failed to load employees:', e);
+            }
+        }
+
+        async function startSurvey() {
+            const surveyId = document.getElementById('surveySelect').value;
+            const employeeId = document.getElementById('employeeSelect').value;
+
+            if (!surveyId || !employeeId) {
+                alert('براہ کرم سروے اور ملازم منتخب کریں');
+                return;
+            }
+
+            try {
+                // Generate room name
+                const roomName = `survey-${surveyId}-${employeeId}-${Date.now()}`;
+                const participantName = `user-${employeeId}`;
+
+                // Get token
+                const tokenRes = await fetch('/livekit/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        room_name: roomName,
+                        participant_name: participantName,
+                        survey_id: parseInt(surveyId),
+                        employee_id: parseInt(employeeId)
+                    })
+                });
+
+                if (!tokenRes.ok) throw new Error('Token generation failed');
+                const tokenData = await tokenRes.json();
+
+                // Connect to LiveKit
+                await connectToRoom(tokenData.token, tokenData.ws_url);
+
+                // Show call UI
+                document.getElementById('setupSection').classList.add('hidden');
+                document.getElementById('callSection').classList.remove('hidden');
+
+            } catch (e) {
+                console.error('Failed to start survey:', e);
+                alert('سروے شروع کرنے میں ناکامی: ' + e.message);
+            }
+        }
+
+        async function connectToRoom(token, wsUrl) {
+            room = new LivekitClient.Room({
+                adaptiveStream: true,
+                dynacast: true
+            });
+
+            // Event handlers
+            room.on('connected', () => {
+                updateStatus('connected', 'متصل');
+                document.getElementById('micBtn').disabled = false;
+            });
+
+            room.on('disconnected', () => {
+                updateStatus('disconnected', 'منقطع');
+            });
+
+            room.on('trackSubscribed', (track, publication, participant) => {
+                if (track.kind === 'audio') {
+                    // Agent audio
+                    const audioElement = track.attach();
+                    document.body.appendChild(audioElement);
+                }
+            });
+
+            room.on('dataReceived', (data, participant) => {
+                try {
+                    const message = JSON.parse(new TextDecoder().decode(data));
+                    handleAgentMessage(message);
+                } catch (e) {
+                    console.error('Data parse error:', e);
+                }
+            });
+
+            // Connect
+            await room.connect(wsUrl, token);
+            localParticipant = room.localParticipant;
+
+            // Publish microphone
+            await localParticipant.setMicrophoneEnabled(true);
+            audioTrack = localParticipant.getTrackPublication('microphone');
+        }
+
+        function handleAgentMessage(message) {
+            if (message.type === 'agent_speech') {
+                addMessage(message.text, 'agent');
+                updateStatus('speaking', 'ایجنٹ بول رہا ہے...');
+            } else if (message.type === 'transcription') {
+                addMessage(message.text, 'user');
+            } else if (message.type === 'listening') {
+                updateStatus('listening', 'سن رہا ہے...');
+            } else if (message.type === 'progress') {
+                updateProgress(message.current, message.total);
+            } else if (message.type === 'complete') {
+                updateStatus('connected', 'سروے مکمل!');
+                setTimeout(endCall, 3000);
+            }
+        }
+
+        function addMessage(text, type) {
+            const conv = document.getElementById('conversation');
+            const label = type === 'agent' ? '🤖 ایجنٹ' : '👤 آپ';
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            div.innerHTML = `<div class="message-label">${label}</div>${text}`;
+            conv.appendChild(div);
+            conv.scrollTop = conv.scrollHeight;
+        }
+
+        function updateStatus(state, text) {
+            const dot = document.getElementById('statusDot');
+            dot.className = 'status-dot ' + state;
+            document.getElementById('statusText').textContent = text;
+        }
+
+        function updateProgress(current, total) {
+            const pct = Math.round((current / total) * 100);
+            document.getElementById('progressBar').style.width = pct + '%';
+        }
+
+        async function toggleMic() {
+            const btn = document.getElementById('micBtn');
+
+            if (isListening) {
+                // Stop listening
+                await localParticipant.setMicrophoneEnabled(false);
+                btn.classList.remove('listening');
+                btn.textContent = '🎙️';
+                isListening = false;
+                updateStatus('connected', 'آپ کی باری');
+            } else {
+                // Start listening
+                await localParticipant.setMicrophoneEnabled(true);
+                btn.classList.add('listening');
+                btn.textContent = '⏹️';
+                isListening = true;
+                updateStatus('listening', 'بولیں...');
+            }
+        }
+
+        async function endCall() {
+            if (room) {
+                await room.disconnect();
+                room = null;
+            }
+
+            // Reset UI
+            document.getElementById('setupSection').classList.remove('hidden');
+            document.getElementById('callSection').classList.add('hidden');
+            document.getElementById('conversation').innerHTML = '';
+            document.getElementById('progressBar').style.width = '0%';
+            updateStatus('disconnected', 'Disconnected');
+        }
+    </script>
+</body>
+
+</html>
